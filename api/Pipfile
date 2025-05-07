@@ -8,6 +8,7 @@ fastapi = {extras = ["standard"], version = "*"}
 pandas = "*"
 uvicorn = "*"
 python-dotenv = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 
