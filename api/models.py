@@ -21,8 +21,9 @@ class Transaction(BaseModel):
 class NetWorthDetail(BaseModel):
     """Data model for a net worth detail entry."""
     Date: datetime.date
-    Account: str | None
+    Account: str
     Category: str
+    Subcategory: str
     Balance: Decimal
 
 
