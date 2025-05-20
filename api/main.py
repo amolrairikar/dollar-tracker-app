@@ -23,14 +23,8 @@ logger.addHandler(handler)
 engine = create_engine('sqlite:///./database.db', connect_args={'check_same_thread': False})
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Define code to run on API startup (before the yield statement) and optionally
-        shutdown (after the yield statement).
-    
-    Args:
-        - app (FastAPI): The FastAPI application instance.
-    """
+def refresh_data():
+    """Reusable function to refresh Google Sheets data."""
     sheets_to_read = ['Transaction_Log', 'Net_Worth_Log']
     for sheet in sheets_to_read:
         data = get_sheets_data(
@@ -44,6 +38,16 @@ async def lifespan(app: FastAPI):
                 if_exists='replace',
                 index=False
             )
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Define code to run on API startup (before the yield statement) and optionally
+        shutdown (after the yield statement).
+    
+    Args:
+        - app (FastAPI): The FastAPI application instance.
+    """
+    refresh_data()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -224,4 +228,9 @@ def get_networth(
         result = connection.execute(text(base_query), params)
         logger.info('Fetched %d rows', result.rowcount)
         return [dict(row._mapping) for row in result]
-    
+
+
+@app.post('/refresh-data')
+def refresh_sheets_data():
+    """Refresh API SQLite database by fetching updated transactions from Google Sheets."""
+    refresh_data()
